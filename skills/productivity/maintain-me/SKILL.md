@@ -149,7 +149,7 @@ After recovery, update each acceptance check and run the final blocker before cl
 
 ## Narrative Project Log
 
-Use the existing task Doc to tell the maintenance story: log a policy decision, material health observation, safe fix, verification, repeat-failure blocker, or handoff with `scripts/project_log.py --doc-id <task-google-doc-id>`. State what happened, why it matters, useful evidence, and exactly who or what acts next. Exclude only credentials, tokens, passwords, and private keys. Avoid per-poll noise; record only material changes or periodic summaries.
+Use the existing task Doc to tell the maintenance story: log a policy decision, material health observation, safe fix, verification, repeat-failure blocker, or handoff with `scripts/project_log.py --doc-id <task-google-doc-id>`. State what happened, why it matters, useful full-detail evidence, and exactly who or what acts next. Exclude only credentials, tokens, passwords, and private keys. Avoid per-poll noise; record only material changes or periodic summaries.
 
 ## Mandatory MoE Stage Gate
 

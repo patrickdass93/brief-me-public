@@ -468,14 +468,14 @@ class ReleaseDistributionTests(unittest.TestCase):
             self.assertEqual(result["manifest"]["file_count"], 1)
             self.assertTrue((checkout / "payload.txt").is_file())
 
-    def test_release_manifest_is_complete_for_v015(self) -> None:
-        """The committed v0.1.5 manifest must match its own immutable Git tree."""
+    def test_release_manifest_is_complete_for_v016(self) -> None:
+        """The committed v0.1.6 manifest must match its own immutable Git tree."""
         manifest_bytes = subprocess.run(
             ["git", "show", "HEAD:release-manifest.json"], cwd=ROOT, stdout=subprocess.PIPE, check=True
         ).stdout
         manifest = json.loads(manifest_bytes)
         self.assertEqual(manifest["schema_version"], 1)
-        self.assertEqual(manifest["version"], "v0.1.5")
+        self.assertEqual(manifest["version"], "v0.1.6")
         tracked = subprocess.run(
             ["git", "ls-tree", "-r", "--name-only", "HEAD"], cwd=ROOT, text=True, capture_output=True, check=True
         ).stdout.splitlines()
