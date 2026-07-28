@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/brief-me/project-log-entry.v1.json",
+  "title": "Brief-Me Narrative Project Log Entry v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "event_type",
+    "actor",
+    "status",
+    "summary",
+    "redactions_applied"
+  ],
+  "properties": {
+    "schema_version": {"const": "project-log/v1"},
+    "task_id": {"type": "string", "minLength": 1},
+    "stage": {"enum": ["brief-me", "build-me", "ship-me", "maintain-me", "project"]},
+    "event_type": {
+      "enum": ["project-started", "decision", "inspection", "action", "verification", "blocker", "approval", "handoff", "summary"]
+    },
+    "actor": {"enum": ["user", "agent", "system"]},
+    "status": {"enum": ["planned", "in-progress", "passed", "failed", "blocked", "waiting-on-user", "complete"]},
+    "summary": {"type": "string", "minLength": 1},
+    "decision": {"type": "string", "minLength": 1},
+    "rationale": {"type": "string", "minLength": 1},
+    "outcome": {"type": "string", "minLength": 1},
+    "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "next_step": {"type": "string", "minLength": 1},
+    "redactions_applied": {"const": true},
+    "recorded_at": {"type": "string", "format": "date-time"},
+    "entry_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "document": {
+      "type": "object",
+      "required": ["id", "url"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "url": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "additionalProperties": false
+}
