@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Append a human-readable, redacted decision and execution event to a task Doc.
+"""Append a human-readable, full-detail, secret-safe event to a task Doc.
 
 The task Doc is an append-only narrative: each event states what happened, who
 made a decision, why it mattered, the observed evidence, and the next step.
@@ -150,12 +150,13 @@ def main() -> int:
     parser.add_argument("--decision")
     parser.add_argument("--rationale")
     parser.add_argument("--outcome")
-    parser.add_argument("--evidence", action="append", default=[], help="Short, redacted proof or reference; repeatable")
+    parser.add_argument("--evidence", action="append", default=[], help="Useful proof or reference; repeatable")
     parser.add_argument("--next-step")
     parser.add_argument("--recorded-at", help="UTC ISO-8601 timestamp; defaults to now")
     parser.add_argument("--config", type=Path, default=Path.home() / ".hermes" / "brief_me_stage_reviews.private.json")
     parser.add_argument("--dry-run", action="store_true", help="Validate and print; do not call Google Docs")
-    parser.add_argument("--redacted", action="store_true", help="Confirm no secrets or raw private data are included")
+    parser.add_argument("--safe-to-log", action="store_true", help="Confirm this entry has no credentials, tokens, passwords, or private keys")
+    parser.add_argument("--redacted", dest="safe_to_log", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     try:
@@ -167,7 +168,7 @@ def main() -> int:
             "actor": args.actor,
             "status": args.status,
             "summary": args.summary,
-            "redactions_applied": args.redacted,
+            "safe_to_log": args.safe_to_log,
         }
         for key in ("decision", "rationale", "outcome", "next_step"):
             value = getattr(args, key)

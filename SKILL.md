@@ -88,7 +88,7 @@ Those require `ship-me` or explicit approval.
 
 ## Canonical Narrative Project Log
 
-Create or reuse one redacted Google Doc at the **start** of each task. It is an append-only, human-readable project story—not an evaluator dump. Log a material decision, important inspection fact, meaningful action, verification result, blocker, approval, or handoff. Each entry says what happened, who decided or acted, why it mattered, concise redacted evidence/outcome, and the exact next step.
+Create or reuse one private, full-detail Google Doc at the **start** of each task. It is an append-only, human-readable project story—not an evaluator dump. Log a material decision, important inspection fact, meaningful action, verification result, blocker, approval, or handoff. Each entry says what happened, who decided or acted, why it mattered, useful evidence/outcome, and the exact next step. Exclude only credentials, tokens, passwords, and private keys.
 
 Use `scripts/project_log.py` for every material event. The first event creates the Doc; later events pass its `--doc-id`. Its marker-based idempotency prevents duplicate entries on retries. Keep the document ID with the task ledger/handoff and never record secrets or raw private diagnostics.
 

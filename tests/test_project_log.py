@@ -26,7 +26,7 @@ def entry(event_type: str = "decision") -> dict:
         "actor": "user",
         "status": "in-progress",
         "summary": "The user clarified that the project record must tell the execution story.",
-        "redactions_applied": True,
+        "safe_to_log": True,
         "recorded_at": "2026-07-28T10:00:00Z",
     }
     if event_type == "decision":
@@ -72,11 +72,9 @@ class ProjectLogTests(unittest.TestCase):
         second["document"] = {"id": "doc-1", "url": "https://example.test/doc-1"}
         self.assertEqual(project_log.entry_digest(first), project_log.entry_digest(second))
 
-    def test_cli_dry_run_requires_redaction_confirmation(self) -> None:
-        # Schema-level behavior is sufficient here: command parsing is exercised
-        # by the package smoke test with explicit --redacted.
+    def test_cli_dry_run_requires_secret_safety_confirmation(self) -> None:
         bad = entry()
-        bad["redactions_applied"] = False
+        bad["safe_to_log"] = False
         self.assertTrue(any("True was expected" in error for error in project_log.validate_entry(bad)))
 
     def test_timeline_renders_decisions_actions_verification_blockers_and_next_steps_in_order(self) -> None:
@@ -122,7 +120,7 @@ class ProjectLogTests(unittest.TestCase):
             "project_log.py", "--task-id", "test-task-001", "--task-title", "Narrative test",
             "--folder-id", "folder-1", "--stage", "brief-me", "--event-type", "decision",
             "--actor", "user", "--status", "in-progress", "--summary", "Choose a readable log.",
-            "--decision", "Use a chronological timeline.", "--next-step", "Implement it.", "--redacted",
+            "--decision", "Use a chronological timeline.", "--next-step", "Implement it.", "--safe-to-log",
             "--recorded-at", "2026-07-28T10:00:00Z",
         ]
         with patch.object(project_log, "create_task_document", side_effect=create), \

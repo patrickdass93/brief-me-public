@@ -149,16 +149,16 @@ After recovery, update each acceptance check and run the final blocker before cl
 
 ## Narrative Project Log
 
-Use the existing task Doc to tell the maintenance story: log a policy decision, material health observation, safe fix, verification, repeat-failure blocker, or handoff with `scripts/project_log.py --doc-id <task-google-doc-id>`. State what happened, why it matters, concise redacted evidence, and exactly who or what acts next. Avoid per-poll noise; record only material changes or periodic summaries.
+Use the existing task Doc to tell the maintenance story: log a policy decision, material health observation, safe fix, verification, repeat-failure blocker, or handoff with `scripts/project_log.py --doc-id <task-google-doc-id>`. State what happened, why it matters, useful evidence, and exactly who or what acts next. Exclude only credentials, tokens, passwords, and private keys. Avoid per-poll noise; record only material changes or periodic summaries.
 
 ## Mandatory MoE Stage Gate
 
-Before closing a maintenance setup or handing it to ongoing operations, append a redacted `stage-gate/v1` maintenance record to the task’s canonical Google Doc:
+Before closing a maintenance setup or handing it to ongoing operations, append a secret-safe `stage-gate/v1` maintenance record to the task’s canonical Google Doc:
 
 ```bash
 python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/moe_stage_gate.py" \
   --stage maintain-me \
-  --artifact <redacted-maintain-record.json> \
+  --artifact <secret-safe-maintain-record.json> \
   --doc-id <task-google-doc-id>
 ```
 

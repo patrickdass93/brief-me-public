@@ -2,7 +2,7 @@
 
 **Task ID:** `<task-id>`<br>
 **Status:** `in-progress`<br>
-**Record policy:** This is the canonical, redacted, append-only story of the project. Every meaningful decision, action, verification, blocker, and handoff is recorded in chronological order below. Machine-readable records are retained only inside the markers beneath each entry so the human narrative remains the primary view.
+**Record policy:** This is the canonical, private, full-detail, append-only story of the project. Every meaningful decision, action, verification, blocker, and handoff is recorded in chronological order below. Include useful operational detail; exclude only credentials, tokens, passwords, and private keys. Machine-readable records are retained only inside the markers beneath each entry so the human narrative remains the primary view.
 
 ## How to read this log
 

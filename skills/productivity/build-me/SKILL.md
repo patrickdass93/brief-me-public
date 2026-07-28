@@ -170,20 +170,20 @@ If the blocker fails, report the pending checks instead of claiming completion. 
 
 ## Narrative Project Log
 
-The task Doc is the running human story of the build, not only an end-of-stage receipt. Before and after each material slice, append a concise redacted `action`, `verification`, `decision`, or `blocker` event with `scripts/project_log.py --doc-id <task-google-doc-id>`. Record what changed or was tried, who decided, why, the real observed result/evidence, and the exact next step. Do not create a second Doc or log routine noise.
+The task Doc is the running human story of the build, not only an end-of-stage receipt. Before and after each material slice, append a concise full-detail `action`, `verification`, `decision`, or `blocker` event with `scripts/project_log.py --doc-id <task-google-doc-id>`. Record what changed or was tried, who decided, why, the real observed result/evidence, and the exact next step. Do not create a second Doc or log routine noise; omit only credentials, tokens, passwords, and private keys.
 
 ## Mandatory MoE Stage Gate
 
-Before handing a completed build to `ship-me`, create a redacted `stage-gate/v1` record with the build contract, changed resources, verification evidence, side effects, unresolved risks, and rollback. Reuse the task’s Google Doc ID from the brief/ledger:
+Before handing a completed build to `ship-me`, create a secret-safe `stage-gate/v1` record with the build contract, changed resources, verification evidence, side effects, unresolved risks, and rollback. Reuse the task’s Google Doc ID from the brief/ledger:
 
 ```bash
 python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/moe_stage_gate.py" \
   --stage build-me \
-  --artifact <redacted-build-record.json> \
+  --artifact <secret-safe-build-record.json> \
   --doc-id <task-google-doc-id>
 ```
 
-The gate calls **GPT-5.6 Sol** and **DeepSeek V4 Pro** in parallel and appends their separate reports to the canonical task Doc. `PASS` from both is required before `ship-me`. `NEEDS_REVISION` loops back to the smallest failing build slice (maximum three cycles); `NEEDS_APPROVAL` pauses for the user; evaluator error blocks the handoff until explicitly resolved. Never place secrets, raw credentials, or unredacted diagnostics in the record.
+The gate calls **GPT-5.6 Sol** and **DeepSeek V4 Pro** in parallel and appends their separate reports to the canonical task Doc. `PASS` from both is required before `ship-me`. `NEEDS_REVISION` loops back to the smallest failing build slice (maximum three cycles); `NEEDS_APPROVAL` pauses for the user; evaluator error blocks the handoff until explicitly resolved. Never place secrets or raw credentials in the record.
 
 ## n8n Build Pattern
 

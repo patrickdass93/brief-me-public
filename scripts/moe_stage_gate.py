@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Evaluate a brief-me stage record with independent MoE model gates.
 
-The task's Google Doc is the canonical redacted record. This script validates a
+The task's Google Doc is the canonical full-detail, secret-safe record. This script validates a
 machine-readable record, calls GPT-5.6 Sol and DeepSeek V4 Pro independently
 (or consumes deterministic mocks), appends the results to the task Doc, and
 returns a strict gate decision.
@@ -106,8 +106,8 @@ def validate_record(record: dict[str, Any]) -> list[str]:
         _required_text(artifact.get("summary"), "artifact.summary", errors)
         if not isinstance(artifact.get("evidence"), list):
             errors.append("artifact.evidence must be an array")
-        if artifact.get("redactions_applied") is not True:
-            errors.append("artifact.redactions_applied must be true")
+        if artifact.get("safe_to_log") is not True:
+            errors.append("artifact.safe_to_log must be true")
 
     stage_data = record.get("stage_data")
     if not isinstance(stage_data, dict):
@@ -288,7 +288,7 @@ def render_doc_appendix(record: dict[str, Any]) -> str:
         "**Recorded by:** `system`  ",
         f"**Status:** `{decision}`",
         "",
-        f"**What happened:** {record.get('artifact', {}).get('summary', 'No redacted stage summary was supplied.')}",
+        f"**What happened:** {record.get('artifact', {}).get('summary', 'No stage summary was supplied.')}",
         "",
         f"**Result:** The independent stage gate returned `{decision}` (`{gate_type}`).",
         "",

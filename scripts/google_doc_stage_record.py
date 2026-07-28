@@ -99,7 +99,7 @@ def create_task_document(
     """Create one private task Doc in the configured folder using its own OAuth.
 
     The template remains generic in the repository. Callers may supply only
-    redacted title/task-ID substitutions for the document heading.
+    safe task-heading substitutions for the document heading.
     """
     template_text = template_path.read_text(encoding="utf-8")
     for key, value in (template_context or {}).items():

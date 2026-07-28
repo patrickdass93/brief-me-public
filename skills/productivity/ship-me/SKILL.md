@@ -140,16 +140,16 @@ After shipping, decide whether `maintain-me` should create monitoring/watchdogs,
 
 ## Narrative Project Log
 
-Keep the same task Doc readable while shipping. Append a redacted `decision` event before approval-gated release work, then `action`, `verification`, or `blocker` events as the release proceeds. Each must state what happened, why it was allowed or blocked, the minimal real evidence, and the next safe step. Reuse `scripts/project_log.py --doc-id <task-google-doc-id>`; never replace the story with raw command output.
+Keep the same task Doc readable while shipping. Append a full-detail `decision` event before approval-gated release work, then `action`, `verification`, or `blocker` events as the release proceeds. Each must state what happened, why it was allowed or blocked, the real evidence, and the next safe step. Reuse `scripts/project_log.py --doc-id <task-google-doc-id>`; exclude only credentials, tokens, passwords, and private keys.
 
 ## Mandatory MoE Stage Gate
 
-After post-ship verification and before declaring the release complete, write a redacted `stage-gate/v1` record to the task’s canonical Google Doc:
+After post-ship verification and before declaring the release complete, write a secret-safe `stage-gate/v1` record to the task’s canonical Google Doc:
 
 ```bash
 python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/moe_stage_gate.py" \
   --stage ship-me \
-  --artifact <redacted-ship-record.json> \
+  --artifact <secret-safe-ship-record.json> \
   --doc-id <task-google-doc-id>
 ```
 

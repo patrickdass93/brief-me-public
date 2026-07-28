@@ -88,7 +88,7 @@ Those require `ship-me` or explicit approval.
 
 ## Canonical Narrative Project Log
 
-Create or reuse **one redacted Google Doc per task at the start of work**. It is not a model-audit dump: it is the human-readable, append-only story of the work.
+Create or reuse **one private, full-detail Google Doc per task at the start of work**. It is not a model-audit dump: it is the human-readable, append-only story of the work. Include ordinary operational detail; exclude only credentials, tokens, passwords, and private keys.
 
 Record a short event when it materially changes the story:
 
@@ -98,7 +98,7 @@ Record a short event when it materially changes the story:
 - verification passes or fails;
 - work is blocked, needs approval, or hands off to the next stage.
 
-Do not log routine internal reads or duplicate noise. Each entry must state **what happened, who acted/decided, why it mattered, concise redacted evidence or outcome, and the exact next step**. Use the event writer; it creates the Doc on the first event and returns its ID/URL:
+Do not log routine internal reads or duplicate noise. Each entry must state **what happened, who acted/decided, why it mattered, useful evidence or outcome, and the exact next step**. Use the event writer; it creates the Doc on the first event and returns its ID/URL:
 
 ```bash
 python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/project_log.py" \
@@ -112,19 +112,19 @@ python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/project_log.py" \
   --decision "<decision, if one was made>" \
   --rationale "<why this is the right first direction>" \
   --next-step "<first safe action>" \
-  --redacted
+  --safe-to-log
 ```
 
 Reuse its `--doc-id` for every later entry and retain it in the ledger/task handoff. Never include secrets, raw private diagnostics, or credential values. For an existing task Doc, use `--doc-id` to begin readable timeline entries without creating a duplicate document.
 
 ## Mandatory MoE Stage Gate
 
-At the final result of every package stage, append a redacted `stage-gate/v1` record to that same task Doc. The gate automatically adds a readable timeline outcome and preserves separate reports from **GPT-5.6 Sol** (contract, scope, approvals, readiness) and **DeepSeek V4 Pro** (evidence, feasibility, idempotency, rollback, safety).
+At the final result of every package stage, append a secret-safe `stage-gate/v1` record to that same task Doc. The gate automatically adds a readable timeline outcome and preserves separate reports from **GPT-5.6 Sol** (contract, scope, approvals, readiness) and **DeepSeek V4 Pro** (evidence, feasibility, idempotency, rollback, safety).
 
 ```bash
 python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/moe_stage_gate.py \
   --stage brief-me \
-  --artifact <redacted-stage-record.json> \
+  --artifact <secret-safe-stage-record.json> \
   --doc-id <task-google-doc-id>
 ```
 
@@ -135,7 +135,7 @@ Gate handling:
 - `NEEDS_APPROVAL` → pause for the user; never infer the decision.
 - `EVALUATOR_ERROR` → pre-flight block. Low-risk drafting/build continuation requires an explicit user decision and a recorded error; shipping is always blocked.
 
-Do not merge, vote on, or rerank the two reports: their independent axes must remain visible. Never commit Drive IDs, task documents, or unredacted evidence.
+Do not merge, vote on, or rerank the two reports: their independent axes must remain visible. Never commit Drive IDs, task documents, actual credentials, or secrets.
 
 ## Durable Task Ledger Guardrail
 

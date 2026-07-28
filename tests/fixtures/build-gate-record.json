@@ -15,7 +15,7 @@
       {"id": "unit-tests", "kind": "command", "reference": "python -m unittest discover -s tests -p test_*.py -v"},
       {"id": "doc-readback", "kind": "Google Doc", "reference": "MoE Stage Evaluation — brief-me Package"}
     ],
-    "redactions_applied": true
+    "safe_to_log": true
   },
   "stage_data": {
     "changed_resources": [

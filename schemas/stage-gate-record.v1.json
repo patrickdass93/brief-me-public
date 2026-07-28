@@ -21,7 +21,7 @@
     },
     "artifact": {
       "type": "object",
-      "required": ["summary", "evidence", "redactions_applied"],
+      "required": ["summary", "evidence", "safe_to_log"],
       "properties": {
         "summary": {"type": "string", "minLength": 1},
         "evidence": {
@@ -38,7 +38,7 @@
             "additionalProperties": true
           }
         },
-        "redactions_applied": {"type": "boolean"}
+        "safe_to_log": {"const": true}
       }
     },
     "stage_data": {"type": "object"},

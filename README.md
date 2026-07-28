@@ -62,7 +62,7 @@ Approval is required for public exposure, real recipients outside approved desti
 
 Every final stage result is evaluated in parallel by **GPT-5.6 Sol** (contract, scope, approval boundaries, next-stage readiness) and **DeepSeek V4 Pro** (operational evidence, feasibility, failure behavior, rollback, safety). The two reports remain separate. A stage advances only when both return `PASS`; revision, approval, and evaluator-error outcomes use explicit gates rather than a blended score.
 
-Each workflow task has one private Google Doc as its canonical **redacted project story**. It is created at the first material event—not only at a final stage gate—and it records the chronological decisions made by the authorized user and the agent, key inspection facts, attempted actions, verification results, blockers, approvals, and handoffs. Every entry answers: **what happened, who decided or acted, why it mattered, concise evidence/outcome, and what happens next.**
+Each workflow task has one private Google Doc as its canonical **full-detail, secret-safe project story**. It is created at the first material event—not only at a final stage gate—and it records the chronological decisions made by the authorized user and the agent, key inspection facts, attempted actions, verification results, blockers, approvals, and handoffs. Every entry answers: **what happened, who decided or acted, why it mattered, useful evidence/outcome, and what happens next.**
 
 Use `scripts/project_log.py` to create/reuse and append idempotent human-readable events. Configure its Drive folder and Google backend outside the repository in `~/.hermes/brief_me_stage_reviews.private.json`; start from `brief_me_stage_reviews.private.json.example`. The stage-gate runtime remains a complementary end-of-stage receipt: it appends a readable outcome to the same timeline and retains independent GPT-5.6 Sol / DeepSeek V4 Pro reports plus a canonical machine record. The generic implementation, schemas, prompt contracts, and test fixtures are public-safe:
 
@@ -79,7 +79,7 @@ tests/
 
 The gate runtime requires Python 3, [`jsonschema`](requirements.txt), and configured `hermes` CLI providers. For task Docs, select the authenticated backend in the private config: `gog`, `gws`, or `hermes-api`. `hermes-api` uses that target Hermes profile's own Google Workspace OAuth helper and never copies credentials between agents. Install the public Python dependency with `python -m pip install -r requirements.txt` before using the gate CLI on a new host.
 
-Use `scripts/moe_stage_gate.py --help` for invocation details. The script validates the record locally, runs both evaluator calls in parallel, then appends the independent reports and canonical machine record to the task Doc. The runtime is invoked from the package checkout by default (`$HOME/brief-me`); set `BRIEF_ME_PACKAGE_ROOT` when the checkout is elsewhere. Never commit Drive IDs, task docs, raw evaluator prompts, or unredacted evidence.
+Use `scripts/moe_stage_gate.py --help` for invocation details. The script validates the record locally, runs both evaluator calls in parallel, then appends the independent reports and canonical machine record to the task Doc. The runtime is invoked from the package checkout by default (`$HOME/brief-me`); set `BRIEF_ME_PACKAGE_ROOT` when the checkout is elsewhere. Never commit Drive IDs, task documents, raw evaluator prompts, or actual credentials.
 
 ## Versioned public release and opt-in source pull
 

@@ -64,9 +64,9 @@ def record(stage: str = "brief-me") -> dict:
             "next_stage": "build-me",
         },
         "artifact": {
-            "summary": "A redacted test artifact.",
+            "summary": "A full-detail test artifact.",
             "evidence": [{"id": "evidence-1", "kind": "test", "reference": "unit-test"}],
-            "redactions_applied": True,
+            "safe_to_log": True,
         },
         "stage_data": stage_data,
     }
@@ -153,7 +153,7 @@ class StageGateTests(unittest.TestCase):
         evaluated["input_digest"] = "abc123"
         evaluated["evaluation_digest"] = stage_gate.evaluation_digest(evaluated)
         appendix = stage_gate.render_doc_appendix(evaluated)
-        self.assertIn("**What happened:** A redacted test artifact.", appendix)
+        self.assertIn("**What happened:** A full-detail test artifact.", appendix)
         self.assertIn("**Result:** The independent stage gate returned `PASS`", appendix)
         self.assertIn("**Next:** Proceed to `build-me`", appendix)
         self.assertIn("@@BRIEF_ME_STAGE_GATE_V1@@", appendix)
