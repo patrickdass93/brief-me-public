@@ -143,7 +143,14 @@ class StageGateTests(unittest.TestCase):
         )
         self.assertEqual(parsed["decision"], "NEEDS_REVISION")
 
-    def test_stage_gate_renders_human_outcome_and_machine_receipt(self) -> None:
+    def test_legacy_redactions_confirmation_is_accepted(self) -> None:
+        legacy = record("build-me")
+        legacy["stage_contract"]["next_stage"] = "ship-me"
+        legacy["artifact"].pop("safe_to_log")
+        legacy["artifact"]["redactions_applied"] = True
+        self.assertEqual(stage_gate.validate_record(legacy), [])
+
+    def test_stage_gate_appends_readable_outcome_and_machine_receipt(self) -> None:
         evaluated = record()
         evaluated["evaluations"] = {
             "gpt_contract": {"decision": "PASS", "findings": []},

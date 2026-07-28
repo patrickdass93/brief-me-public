@@ -72,6 +72,12 @@ class ProjectLogTests(unittest.TestCase):
         second["document"] = {"id": "doc-1", "url": "https://example.test/doc-1"}
         self.assertEqual(project_log.entry_digest(first), project_log.entry_digest(second))
 
+    def test_legacy_redactions_confirmation_remains_valid(self) -> None:
+        legacy = entry()
+        legacy.pop("safe_to_log")
+        legacy["redactions_applied"] = True
+        self.assertEqual(project_log.validate_entry(legacy), [])
+
     def test_cli_dry_run_requires_secret_safety_confirmation(self) -> None:
         bad = entry()
         bad["safe_to_log"] = False

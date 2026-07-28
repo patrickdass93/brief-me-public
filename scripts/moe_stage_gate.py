@@ -106,8 +106,8 @@ def validate_record(record: dict[str, Any]) -> list[str]:
         _required_text(artifact.get("summary"), "artifact.summary", errors)
         if not isinstance(artifact.get("evidence"), list):
             errors.append("artifact.evidence must be an array")
-        if artifact.get("safe_to_log") is not True:
-            errors.append("artifact.safe_to_log must be true")
+        if artifact.get("safe_to_log") is not True and artifact.get("redactions_applied") is not True:
+            errors.append("artifact.safe_to_log or artifact.redactions_applied must be true")
 
     stage_data = record.get("stage_data")
     if not isinstance(stage_data, dict):

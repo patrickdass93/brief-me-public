@@ -9,8 +9,7 @@
     "event_type",
     "actor",
     "status",
-    "summary",
-    "safe_to_log"
+    "summary"
   ],
   "properties": {
     "schema_version": {"const": "project-log/v1"},
@@ -28,6 +27,7 @@
     "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "next_step": {"type": "string", "minLength": 1},
     "safe_to_log": {"const": true},
+    "redactions_applied": {"const": true},
     "recorded_at": {"type": "string", "format": "date-time"},
     "entry_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
     "document": {
@@ -39,5 +39,9 @@
       }
     }
   },
+  "anyOf": [
+    {"required": ["safe_to_log"]},
+    {"required": ["redactions_applied"]}
+  ],
   "additionalProperties": false
 }
