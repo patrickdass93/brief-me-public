@@ -150,12 +150,16 @@ For each completed slice, capture:
 - side effects performed;
 - unresolved risks.
 
-### 7. Decide Next Skill
+### 7. Record the Post-Proof Decision
 
-- More slices needed and still low-risk → continue `build-me`.
-- Ready for activation/exposure/release → use `ship-me`.
-- Already shipped and needs monitoring → use `maintain-me`.
-- Scope unclear → return to `brief-me`.
+After every verified proof, load `references/decision-and-continuation-protocol.md` and write its mandatory post-proof record to the durable ledger and project Doc. Choose only `close`, `continue`, `expand`, or `revisit`.
+
+The protocol is advisory. A discriminating check or next-capability slice may run only when it is already inside the written allowed scope and not approval-gated. `expand` proposes one bounded next capability; it does not authorize it.
+
+- `continue` — more already-approved low-risk slices are needed.
+- `expand` — proof met promotion criteria; return to Brief-Me or use the already-approved next slice.
+- `close` — success criteria are met; hand to `ship-me` or `maintain-me` as applicable.
+- `revisit` — scope, evidence, ownership, or approval boundary changed; return to `brief-me`.
 
 ## Final-Answer Ledger Gate
 

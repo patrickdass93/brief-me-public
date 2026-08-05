@@ -88,13 +88,54 @@ Those require `ship-me` or explicit approval.
 
 ## Canonical Narrative Project Log
 
-Create or reuse one private, full-detail Google Doc at the **start** of each task. It is an append-only, human-readable project story—not an evaluator dump. Log a material decision, important inspection fact, meaningful action, verification result, blocker, approval, or handoff. Each entry says what happened, who decided or acted, why it mattered, useful evidence/outcome, and the exact next step. Exclude only credentials, tokens, passwords, and private keys.
+Create or reuse **one private, full-detail Google Doc per task at the start of work**. It is not a model-audit dump: it is the human-readable, append-only story of the work. Include ordinary operational detail; exclude only credentials, tokens, passwords, and private keys.
 
-Use `scripts/project_log.py` for every material event. The first event creates the Doc; later events pass its `--doc-id`. Its marker-based idempotency prevents duplicate entries on retries. Keep the document ID with the task ledger/handoff and never record secrets or raw private diagnostics.
+Record a short event when it materially changes the story:
+
+- the user or agent makes a decision, including why;
+- inspection establishes an important fact or constraint;
+- a meaningful build/ship action is attempted;
+- verification passes or fails;
+- work is blocked, needs approval, or hands off to the next stage.
+
+Do not log routine internal reads or duplicate noise. Each entry must state **what happened, who acted/decided, why it mattered, useful evidence or outcome, and the exact next step**. Use the event writer; it creates the Doc on the first event and returns its ID/URL:
+
+```bash
+python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/project_log.py" \
+  --task-id <stable-task-id> \
+  --task-title "<task title>" \
+  --stage brief-me \
+  --event-type project-started \
+  --actor user \
+  --status in-progress \
+  --summary "<what the user asked for>" \
+  --decision "<decision, if one was made>" \
+  --rationale "<why this is the right first direction>" \
+  --next-step "<first safe action>" \
+  --safe-to-log
+```
+
+Reuse its `--doc-id` for every later entry and retain it in the ledger/task handoff. Never include secrets, raw private diagnostics, or credential values. For an existing task Doc, use `--doc-id` to begin readable timeline entries without creating a duplicate document.
 
 ## Mandatory MoE Stage Gate
 
-At each stage end, append the `stage-gate/v1` record to that same Doc with `--doc-id`. The gate adds a readable timeline outcome and retains GPT-5.6 Sol and DeepSeek V4 Pro reports independently. Both must `PASS` before handoff; revision, approval, and evaluator-error outcomes remain explicit gates.
+At the final result of every package stage, append a secret-safe `stage-gate/v1` record to that same task Doc. The gate automatically adds a readable timeline outcome and preserves separate reports from **GPT-5.6 Sol** (contract, scope, approvals, readiness) and **DeepSeek V4 Pro** (evidence, feasibility, idempotency, rollback, safety).
+
+```bash
+python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/moe_stage_gate.py \
+  --stage brief-me \
+  --artifact <secret-safe-stage-record.json> \
+  --doc-id <task-google-doc-id>
+```
+
+Gate handling:
+
+- `PASS` from **both** evaluators → hand off to `build-me` when otherwise low risk.
+- `NEEDS_REVISION` → revise this stage and rerun; cap the revision loop at three attempts, then escalate.
+- `NEEDS_APPROVAL` → pause for the user; never infer the decision.
+- `EVALUATOR_ERROR` → pre-flight block. Low-risk drafting/build continuation requires an explicit user decision and a recorded error; shipping is always blocked.
+
+Do not merge, vote on, or rerank the two reports: their independent axes must remain visible. Never commit Drive IDs, task documents, actual credentials, or secrets.
 
 ## Durable Task Ledger Guardrail
 
@@ -137,9 +178,22 @@ Pick the execution lane:
 - **Recurring report/admin automation:** later load relevant productivity/database/email skills.
 - **Code feature:** later load `writing-plans` and `test-driven-development`.
 
-### 3. Define the First Useful Version
+### 2.5 Decision Expansion Gate — Conditional
 
-Make version one smaller than the dream:
+Before choosing a lane or first proof, load `references/decision-and-continuation-protocol.md` when read-only inspection leaves two or more feasible paths whose safety, cost, reversibility, ownership, or rework differ materially. This creates an advisory recommendation only; it cannot execute a check, create a slice, or grant approval.
+
+Record the chosen path, a deferred viable alternative, a revisit trigger, and the execution boundary. If the next proof is not already in the written allowed scope, return to Brief-Me or obtain the required approval.
+
+### 3. Define the First Useful Version and Expansion Ladder
+
+Make version one smaller than the dream, but do not treat it as the finish line. For the brief, define:
+
+- proof milestone and observable promotion criteria;
+- the one next capability worth considering after proof;
+- approval and rollback boundary for that capability;
+- the evidence that would select `close`, `continue`, `expand`, or `revisit`.
+
+Then make version one smaller than the dream:
 
 - Manual trigger before real trigger.
 - Draft output before live send.
@@ -183,6 +237,8 @@ Use this format:
 **Intent:** <one sentence>
 **Domain:** <n8n/app setup/agent workflow/etc>
 **First useful version:** <smallest testable outcome>
+**Proof milestone / promotion criteria:** <evidence needed before considering one next capability>
+**Post-proof choice:** `close` / `continue` / `expand` / `revisit` — record per `references/decision-and-continuation-protocol.md`
 
 **Current-state inspection needed:**
 - <read-only checks>

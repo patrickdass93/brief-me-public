@@ -7,7 +7,9 @@ A Hermes skill package for turning vague project ideas into verified agentic exe
 - `brief-me` — grill the idea into a compact build brief, with approval gates and first safe slice.
 - `build-me` — execute the smallest safe slice using inspect → build → run → observe → fix loops.
 - `ship-me` — release/activate/expose with final verification, rollback, and side-effect gates.
-- `maintain-me` — create quiet monitoring/watchdogs and auto-fix simple failures when safe.
+- `maintain-me` — create quiet monitoring/watchdogs, auto-fix simple failures when safe, and run evidence-gated improvement reviews when the health contract allows them.
+
+The package shares [`references/decision-and-continuation-protocol.md`](references/decision-and-continuation-protocol.md): a bounded, advisory comparison process that prevents premature convergence and requires every verified proof to record whether to close, continue, expand, or revisit. It never replaces approvals, rollback, ledgers, or independent MoE stage gates.
 
 ## Operating model
 
@@ -18,7 +20,7 @@ brief-me → build-me → ship-me → maintain-me
 The package translates the coding-agent loop into operational work:
 
 ```text
-Vague idea → grilled questions → build brief → smallest safe slice → verified run → safe ship → quiet maintenance
+Vague idea → grilled questions → decision comparison → safe proof → verified run → evidence-gated continuation → safe ship → quiet maintenance + improvement review
 ```
 
 ## Install into Hermes
@@ -198,7 +200,11 @@ The primary support script is:
 
 ```bash
 scripts/brief_me_usage_collect.py
+scripts/curator_review_dedupe.py
 ```
+
+The weekly curator uses `curator_review_dedupe.py` with a stable ISO-week and bounded evidence signature. An unchanged same-period signature is `no_change`: no duplicate proposal, source edit, cron change, live-project action, or repeat delivery.
+
 
 It collects compact, redacted skill-usage evidence, evidence-tag counts, package-integrity hashes, and bounded-improvement decision metadata. The cron prompt should abstract any work/personal details into reusable skill improvements and avoid committing sensitive content.
 

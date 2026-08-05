@@ -102,6 +102,12 @@ Depending on domain:
 - Public exposure: local success first, route/tunnel/DNS target correct, auth in place, no admin console exposed accidentally.
 - Messaging/social: destination verified, content reviewed, rate/noise controls present.
 
+### 2.5 Release Challenge — Conditional
+
+For consequential releases (public exposure, real recipients, recurring schedules, cost/privacy/reputational impact, or unfamiliar rollback), load `references/decision-and-continuation-protocol.md` and run its three-lens advisory challenge. Record the smallest release scope, top failure mode, detection, rollback boundary, and blocker if any.
+
+This challenge cannot authorize shipping, weaken an approval requirement, or replace the independent MoE stage gate.
+
 ### 3. Backup or Rollback First
 
 Before activation/exposure:

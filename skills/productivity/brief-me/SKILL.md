@@ -178,9 +178,22 @@ Pick the execution lane:
 - **Recurring report/admin automation:** later load relevant productivity/database/email skills.
 - **Code feature:** later load `writing-plans` and `test-driven-development`.
 
-### 3. Define the First Useful Version
+### 2.5 Decision Expansion Gate — Conditional
 
-Make version one smaller than the dream:
+Before choosing a lane or first proof, load `references/decision-and-continuation-protocol.md` when read-only inspection leaves two or more feasible paths whose safety, cost, reversibility, ownership, or rework differ materially. This creates an advisory recommendation only; it cannot execute a check, create a slice, or grant approval.
+
+Record the chosen path, a deferred viable alternative, a revisit trigger, and the execution boundary. If the next proof is not already in the written allowed scope, return to Brief-Me or obtain the required approval.
+
+### 3. Define the First Useful Version and Expansion Ladder
+
+Make version one smaller than the dream, but do not treat it as the finish line. For the brief, define:
+
+- proof milestone and observable promotion criteria;
+- the one next capability worth considering after proof;
+- approval and rollback boundary for that capability;
+- the evidence that would select `close`, `continue`, `expand`, or `revisit`.
+
+Then make version one smaller than the dream:
 
 - Manual trigger before real trigger.
 - Draft output before live send.
@@ -224,6 +237,8 @@ Use this format:
 **Intent:** <one sentence>
 **Domain:** <n8n/app setup/agent workflow/etc>
 **First useful version:** <smallest testable outcome>
+**Proof milestone / promotion criteria:** <evidence needed before considering one next capability>
+**Post-proof choice:** `close` / `continue` / `expand` / `revisit` — record per `references/decision-and-continuation-protocol.md`
 
 **Current-state inspection needed:**
 - <read-only checks>

@@ -117,7 +117,7 @@ When a simple failure is detected:
 5. alert with what happened if a fix was performed;
 6. escalate if the fix fails or repeats.
 
-### 5. Review Drift
+### 5. Review Drift and Improvement
 
 Periodically check:
 
@@ -128,6 +128,10 @@ Periodically check:
 - backups still recent;
 - logs not accumulating repeated errors;
 - costs/rate limits not surprising.
+
+When a health contract explicitly names a cadence, owner, alert route, stable project ID, period-key dedupe, disable path, and no-side-effect boundary, run a low-frequency improvement review. Load `references/decision-and-continuation-protocol.md`; it may recommend `close`, `continue`, `expand`, or `revisit`, but it must not mutate the live system, create recursive crons, or bypass Build-Me/Ship-Me approvals.
+
+For an unknown incident, use its advisory hypothesis expansion only after a documented bounded safe fix fails or repeats. Run one already-authorized read-only discriminating check, then record the result; do not stack speculative repairs.
 
 ## Hermes Agent Task Watchdogs
 
