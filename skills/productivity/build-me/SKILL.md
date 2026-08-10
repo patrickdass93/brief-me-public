@@ -1,7 +1,7 @@
 ---
 name: build-me
 description: Use after brief-me to execute the smallest safe build slice for workflows, automations, app/tool setups, and integrations using inspect-build-run-observe-fix loops.
-version: 1.0.0
+version: 1.0.1
 author: Hermes Agent
 license: MIT
 metadata:
@@ -238,6 +238,7 @@ After each slice:
 6. **No backups before modifying existing workflows/config.** Export or copy first.
 7. **Fail-open automations.** Missing or invalid data should stop quietly or log, not spam.
 8. **Secret leakage.** Use names/metadata/env references only; never print secret values.
+9. **Incomplete handoff metadata.** When receiving a handoff from brief-me, verify task ID, project Doc ID, and ledger ID are present; abort and return to brief-me if they are missing.
 
 ## Verification Checklist
 

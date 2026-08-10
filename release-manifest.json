@@ -34,8 +34,8 @@
     "scripts/pull_package_release.py": "ec6c5259d4e29b8cdb40f1003b845d9c83be48bd63da5aa2219665e50d53df0a",
     "scripts/task_runtime.py": "fa2d81e0c23ceef12ea0eb0c15e9eded01cb7f48868b952d45b6874754051e4a",
     "scripts/verify_package_install.py": "a5f4e88c2ea1f7aaf8bc6e9ca5198a0aae69d9ed98498828db13ca829a8f6fef",
-    "skills/productivity/brief-me/SKILL.md": "198dde07e29e14c6b73dab8aeee8621498d29e94e9372294e02f963db40fd13e",
-    "skills/productivity/build-me/SKILL.md": "e8fd44ad27a083cad061242790c59d1cd4b29108b24ceb5d2f932fdc032e1295",
+    "skills/productivity/brief-me/SKILL.md": "6bd6769e1c554901e1d42c25c155863dd2f1dac106fd0eff8fb71e2f42d6f30d",
+    "skills/productivity/build-me/SKILL.md": "6d9ac3edb4ee9be34d7003287b8cd696ed0129daf7bee313282dd7e20295ea11",
     "skills/productivity/maintain-me/SKILL.md": "ca6ebb5948709e20bed63ad5841cf3133bdb33d99f4cb8ff38b991d1b82f9d0a",
     "skills/productivity/ship-me/SKILL.md": "77f8415e09e110d1746f16f54fdd4c05aa5209553720264523edc11ec15e0655",
     "templates/task-review-template.md": "322519bf54c5d22727dc9ae4a56fe94aab638138fd63cb8453ac19228ea49636",
@@ -44,7 +44,7 @@
     "tests/test_curator_review_dedupe.py": "8d7f3fab6fb9a3e21116dfc763a200adddd8033ac568f63d4bb193030edfc092",
     "tests/test_moe_stage_gate.py": "948a9e4c326162628bd747796fcccb044228cb3bfff531747d7e423a2534b3f0",
     "tests/test_project_log.py": "089722ccb6b7cce0d3e3d152dd4b46aec5efdfe5932c600f3d73c65d6c1b21ef",
-    "tests/test_release_distribution.py": "525162c33081f44ea53ac13e6fec66c7242ea3baedece044d6333743062c268f",
+    "tests/test_release_distribution.py": "779a1c1f09a7c9b3ca228e2505f8875180d3c2f373a895dbb9a25d260a0e0442",
     "tests/test_runtime_distribution.py": "5b46c06b1f318900af03c16b950e8dcf10c1d97295d527ac13e4565476e072ab",
     "tests/test_task_runtime.py": "6f1d1cb1fd58ff691b03e446c14f6fb943005e8e919cd47cd775db806369cfca"
   }

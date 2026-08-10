@@ -1,7 +1,7 @@
 ---
 name: brief-me
 description: Use when starting a workflow, automation, app/tool setup, integration, or agent project; grill the idea into a compact build brief, then hand off to build-me for low-risk first slices.
-version: 1.1.0
+version: 1.1.1
 author: Hermes Agent
 license: MIT
 metadata:
@@ -335,6 +335,7 @@ Use this format:
 6. **Activating too early.** Use `ship-me` for release/activation gates.
 7. **Secret leakage.** Document credential names/locations only, never values.
 8. **Overbuilding v1.** Prove the path first, then expand.
+9. **Incomplete handoff metadata.** When handing off to build-me, always include the stable task ID, project Doc ID, and ledger ID; never just say "hand off to build-me".
 
 ## Verification Checklist
 
@@ -350,6 +351,7 @@ Use this format:
 - [ ] Failure behavior is fail-closed where possible.
 - [ ] Secrets are assigned to approved stores only.
 - [ ] Rollback path is documented.
+- [ ] Task ID, project Doc ID, and ledger ID are included in handoff.
 - [ ] Next skill is named.
 
 ## One-Line Reminder
