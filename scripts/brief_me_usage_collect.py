@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any
 
 TERMS = ["brief-me", "build-me", "ship-me", "maintain-me"]
+REFERENCE_RELATIVE = Path("references") / "decision-and-continuation-protocol.md"
 EVIDENCE_PATTERNS = {
     "explicit_invocation": [r"\buse (?:the )?(brief-me|build-me|ship-me|maintain-me)\b", r"\bbrief me\b"],
     "user_correction": [r"\bcan we not\b", r"\binstead\b", r"\bnot do it that way\b", r"\bwrong\b", r"\bthat's not\b"],
@@ -52,6 +53,7 @@ COLLECTOR = r'''
 import argparse, hashlib, json, re, sqlite3, time
 from pathlib import Path
 TERMS = ["brief-me", "build-me", "ship-me", "maintain-me"]
+REFERENCE_RELATIVE = Path("references") / "decision-and-continuation-protocol.md"
 EVIDENCE_PATTERNS = {
     "explicit_invocation": [r"\buse (?:the )?(brief-me|build-me|ship-me|maintain-me)\b", r"\bbrief me\b"],
     "user_correction": [r"\bcan we not\b", r"\binstead\b", r"\bnot do it that way\b", r"\bwrong\b", r"\bthat's not\b"],
@@ -107,7 +109,8 @@ def collect(agent, days, limit, profile_root=None, summary_only=False):
     base = root / "skills" / "productivity"
     for name in TERMS:
         p = base / name / "SKILL.md"
-        out["skills"][name] = {"exists": p.exists(), "bytes": p.stat().st_size if p.exists() else 0, "sha16": sha_file(p)}
+        reference = base / name / REFERENCE_RELATIVE
+        out["skills"][name] = {"exists": p.exists(), "bytes": p.stat().st_size if p.exists() else 0, "sha16": sha_file(p), "reference_exists": reference.exists(), "reference_bytes": reference.stat().st_size if reference.exists() else 0, "reference_sha16": sha_file(reference)}
     db = root / "state.db"
     if not db.exists():
         out["error"] = "state.db not found"
@@ -220,21 +223,24 @@ def repo_status() -> dict[str, Any]:
     return out
 
 
-def expected_manifest() -> dict[str, str]:
+def expected_manifest() -> dict[str, dict[str, str | None]]:
     repo_base = Path.home() / "brief-me" / "skills" / "productivity"
     local_base = Path.home() / ".hermes" / "skills" / "productivity"
     base = repo_base if repo_base.exists() else local_base
-    return {name: (hashlib.sha256((base / name / "SKILL.md").read_bytes()).hexdigest()[:16] if (base / name / "SKILL.md").exists() else None) for name in TERMS}
+    return {name: {"skill_sha16": (hashlib.sha256((base / name / "SKILL.md").read_bytes()).hexdigest()[:16] if (base / name / "SKILL.md").exists() else None), "reference_sha16": (hashlib.sha256((base / name / REFERENCE_RELATIVE).read_bytes()).hexdigest()[:16] if (base / name / REFERENCE_RELATIVE).exists() else None)} for name in TERMS}
 
 
-def package_integrity(agents: list[dict[str, Any]], expected: dict[str, str]) -> dict[str, Any]:
+def package_integrity(agents: list[dict[str, Any]], expected: dict[str, dict[str, str | None]]) -> dict[str, Any]:
     by_agent = {}
     all_ok = True
     for agent in agents:
         checks = {}
         for name in TERMS:
             info = agent.get("skills", {}).get(name, {})
-            ok = bool(info.get("exists")) and info.get("sha16") == expected.get(name)
+            expected_skill = expected.get(name, {})
+            skill_ok = bool(info.get("exists")) and info.get("sha16") == expected_skill.get("skill_sha16")
+            reference_ok = bool(info.get("reference_exists")) and info.get("reference_sha16") == expected_skill.get("reference_sha16")
+            ok = skill_ok and reference_ok
             checks[name] = ok
             all_ok = all_ok and ok
         by_agent[agent.get("agent", "unknown")] = checks

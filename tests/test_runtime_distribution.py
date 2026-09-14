@@ -26,6 +26,7 @@ def load(name: str, filename: str):
 deploy = load("deploy_package_install", "deploy_package_install.py")
 verify = load("verify_package_install", "verify_package_install.py")
 audit = load("audit_runtime_readiness", "audit_runtime_readiness.py")
+collector = load("brief_me_usage_collect", "brief_me_usage_collect.py")
 
 
 class RuntimeDistributionTests(unittest.TestCase):
@@ -36,6 +37,7 @@ class RuntimeDistributionTests(unittest.TestCase):
             names = set(archive.getnames())
         for skill in deploy.SKILLS:
             self.assertIn(f"{skill}/SKILL.md", names)
+            self.assertIn(f"{skill}/references/decision-and-continuation-protocol.md", names)
         self.assertIn("runtime/task_runtime.py", names)
         self.assertEqual(sum(name == "runtime/task_runtime.py" for name in names), 1)
 
@@ -68,6 +70,9 @@ class RuntimeDistributionTests(unittest.TestCase):
             self.assertTrue(result["ok"])
             self.assertTrue(result["backup_created"])
             self.assertEqual(installed.read_bytes(), (ROOT / "scripts" / "task_runtime.py").read_bytes())
+            for skill in deploy.SKILLS:
+                installed_reference = root / "skills" / "productivity" / skill / "references" / "decision-and-continuation-protocol.md"
+                self.assertEqual(installed_reference.read_bytes(), (ROOT / "references" / "decision-and-continuation-protocol.md").read_bytes())
             backups = list((root / "backups").glob("brief-me-runtime-*"))
             self.assertEqual(len(backups), 1)
             self.assertEqual((backups[0] / "task-runtime" / "task_runtime.py").read_text(), "old-runtime")
@@ -84,12 +89,37 @@ class RuntimeDistributionTests(unittest.TestCase):
             self.assertTrue(result["runtime"]["ok"])
             self.assertFalse(result["all_ok"], "skills are intentionally absent in this isolated test")
 
+    def test_verification_requires_shared_reference_for_every_skill(self) -> None:
+        expected = verify.repo_manifest(ROOT)
+        self.assertIsInstance(expected["skills"]["brief-me"], dict)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "target-hermes"
+            deploy.deploy_local(
+                {"agent": "local-test", "profile_root": str(root)},
+                deploy.source_root(ROOT),
+                ROOT / "scripts" / "task_runtime.py",
+                dry_run=False,
+            )
+            matching = verify.check_local("local-test", str(root), expected)
+            self.assertTrue(matching["all_ok"])
+            (root / "skills" / "productivity" / "brief-me" / "references" / "decision-and-continuation-protocol.md").unlink()
+            missing_reference = verify.check_local("local-test", str(root), expected)
+            self.assertFalse(missing_reference["all_ok"])
+            self.assertFalse(missing_reference["skills"]["brief-me"]["ok"])
+
     def test_audit_marks_missing_package_or_cli_prerequisite_as_drift(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / ".hermes"
             root.mkdir()
             report = audit.audit_local_root("local-test", root)
             self.assertEqual(report["status"], "drift")
+
+    def test_collector_integrity_requires_shared_reference_hashes(self) -> None:
+        expected = {name: {"skill_sha16": f"skill-{name}", "reference_sha16": f"reference-{name}"} for name in collector.TERMS}
+        agent = {"agent": "local-test", "skills": {name: {"exists": True, "sha16": f"skill-{name}", "reference_exists": True, "reference_sha16": f"reference-{name}"} for name in collector.TERMS}}
+        self.assertTrue(collector.package_integrity([agent], expected)["all_agents_match_expected"])
+        agent["skills"]["brief-me"]["reference_sha16"] = "tampered"
+        self.assertFalse(collector.package_integrity([agent], expected)["all_agents_match_expected"])
 
     def test_audit_local_root_reports_safe_presence_only(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -241,6 +241,8 @@ Auto-fix can include a single restart for non-critical services, but repeated fa
 8. **Changing production while maintaining.** Repairs beyond the documented safe fixes need approval.
 9. **Pruning package siblings.** brief-me, build-me, ship-me, and maintain-me are a single integrated package. Do not install, remove, or update one without the others unless explicitly requested.
 10. **Handoff gaps.** When you reach the boundary of one skill (e.g. brief is complete), explicitly invoke the next skill in the pipeline rather than continuing manually.
+11. **Package curator privilege escalation.** Agent self-evolution workflows may submit redacted evidence/proposals to the package curator, but must never edit the generic public package source or fleet-installed copies directly. Only the dedicated weekly Maintain-Me package curator may apply small generic improvements under existing public release policy.
+12. **Drift silent failure.** Package integrity hash mismatch across the installed fleet is a degraded state requiring review, not a silent no-op.
 
 ## Verification Checklist
 

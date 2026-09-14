@@ -203,8 +203,7 @@ scripts/brief_me_usage_collect.py
 scripts/curator_review_dedupe.py
 ```
 
-The weekly curator uses `curator_review_dedupe.py` with a stable ISO-week and bounded evidence signature. An unchanged same-period signature is `no_change`: no duplicate proposal, source edit, cron change, live-project action, or repeat delivery.
-
+The weekly curator uses `curator_review_dedupe.py` with a stable ISO-week and bounded evidence signature. The first invocation atomically claims the review and returns a claim ID; after the bounded review completes, record it with `--complete --claim-id <claim-id>`. An unchanged completed signature is `no_change`; a live claim is `review_in_progress`, and an interrupted claim can be reclaimed after its lease expires. The state file contains only the secret-safe signature, period, decision/proposal identity when present, claim status, and timestamps.
 
 It collects compact, redacted skill-usage evidence, evidence-tag counts, package-integrity hashes, and bounded-improvement decision metadata. The cron prompt should abstract any work/personal details into reusable skill improvements and avoid committing sensitive content.
 

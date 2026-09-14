@@ -475,7 +475,7 @@ class ReleaseDistributionTests(unittest.TestCase):
         ).stdout
         manifest = json.loads(manifest_bytes)
         self.assertEqual(manifest["schema_version"], 1)
-        self.assertEqual(manifest["version"], "v0.1.8")
+        self.assertEqual(manifest["version"], "v0.1.9")
         tracked = subprocess.run(
             ["git", "ls-tree", "-r", "--name-only", "HEAD"], cwd=ROOT, text=True, capture_output=True, check=True
         ).stdout.splitlines()

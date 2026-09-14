@@ -18,12 +18,14 @@ from pathlib import Path
 from typing import Any
 
 SKILLS = ["brief-me", "build-me", "ship-me", "maintain-me"]
+REFERENCE_RELATIVE = Path("references") / "decision-and-continuation-protocol.md"
 RUNTIME_RELATIVE = Path("runtime") / "task-runtime" / "task_runtime.py"
 
 REMOTE_CHECK = r'''
 import argparse, hashlib, json
 from pathlib import Path
 SKILLS = ["brief-me", "build-me", "ship-me", "maintain-me"]
+REFERENCE_RELATIVE = Path('references') / 'decision-and-continuation-protocol.md'
 def sha(path):
     try: return hashlib.sha256(Path(path).read_bytes()).hexdigest()
     except Exception: return None
@@ -36,8 +38,12 @@ skills = {}
 all_skills_ok = True
 for name in SKILLS:
     p = root / 'skills' / 'productivity' / name / 'SKILL.md'; digest = sha(p)
-    ok = p.is_file() and digest == expected['skills'].get(name)
-    skills[name] = {'exists': p.is_file(), 'bytes': p.stat().st_size if p.is_file() else 0, 'sha256': digest, 'expected_sha256': expected['skills'].get(name), 'ok': ok}
+    reference = root / 'skills' / 'productivity' / name / REFERENCE_RELATIVE; reference_digest = sha(reference)
+    expected_skill = expected['skills'].get(name, {}); expected_skill = {'skill': expected_skill} if isinstance(expected_skill, str) else expected_skill
+    skill_ok = p.is_file() and digest == expected_skill.get('skill')
+    reference_ok = reference.is_file() and reference_digest == expected_skill.get('reference')
+    ok = skill_ok and reference_ok
+    skills[name] = {'exists': p.is_file(), 'bytes': p.stat().st_size if p.is_file() else 0, 'sha256': digest, 'expected_sha256': expected_skill.get('skill'), 'reference_exists': reference.is_file(), 'reference_bytes': reference.stat().st_size if reference.is_file() else 0, 'reference_sha256': reference_digest, 'expected_reference_sha256': expected_skill.get('reference'), 'ok': ok}
     all_skills_ok = all_skills_ok and ok
 p = root / 'runtime' / 'task-runtime' / 'task_runtime.py'; digest = sha(p)
 runtime = {'exists': p.is_file(), 'bytes': p.stat().st_size if p.is_file() else 0, 'sha256': digest, 'expected_sha256': expected['runtime'], 'ok': p.is_file() and digest == expected['runtime']}
@@ -54,7 +60,7 @@ def sha256(path: Path) -> str | None:
 
 def repo_manifest(repo_root: Path) -> dict[str, Any]:
     base = repo_root / "skills" / "productivity"
-    return {"skills": {name: sha256(base / name / "SKILL.md") for name in SKILLS}, "runtime": sha256(repo_root / "scripts" / "task_runtime.py")}
+    return {"skills": {name: {"skill": sha256(base / name / "SKILL.md"), "reference": sha256(base / name / REFERENCE_RELATIVE)} for name in SKILLS}, "runtime": sha256(repo_root / "scripts" / "task_runtime.py")}
 
 
 def check_local(agent: str, profile_root: str, expected: dict[str, Any]) -> dict[str, Any]:
@@ -65,8 +71,13 @@ def check_local(agent: str, profile_root: str, expected: dict[str, Any]) -> dict
     for name in SKILLS:
         path = base / name / "SKILL.md"
         digest = sha256(path)
-        ok = path.is_file() and digest == expected["skills"].get(name)
-        skills[name] = {"exists": path.is_file(), "bytes": path.stat().st_size if path.is_file() else 0, "sha256": digest, "expected_sha256": expected["skills"].get(name), "ok": ok}
+        reference = base / name / REFERENCE_RELATIVE
+        reference_digest = sha256(reference)
+        expected_skill = expected["skills"].get(name, {}); expected_skill = {"skill": expected_skill} if isinstance(expected_skill, str) else expected_skill
+        skill_ok = path.is_file() and digest == expected_skill.get("skill")
+        reference_ok = reference.is_file() and reference_digest == expected_skill.get("reference")
+        ok = skill_ok and reference_ok
+        skills[name] = {"exists": path.is_file(), "bytes": path.stat().st_size if path.is_file() else 0, "sha256": digest, "expected_sha256": expected_skill.get("skill"), "reference_exists": reference.is_file(), "reference_bytes": reference.stat().st_size if reference.is_file() else 0, "reference_sha256": reference_digest, "expected_reference_sha256": expected_skill.get("reference"), "ok": ok}
         all_skills_ok = all_skills_ok and ok
     runtime_path = root / RUNTIME_RELATIVE
     runtime_digest = sha256(runtime_path)

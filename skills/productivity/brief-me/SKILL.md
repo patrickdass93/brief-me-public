@@ -336,6 +336,8 @@ Use this format:
 7. **Secret leakage.** Document credential names/locations only, never values.
 8. **Overbuilding v1.** Prove the path first, then expand.
 9. **Incomplete handoff metadata.** When handing off to build-me, always include the stable task ID, project Doc ID, and ledger ID; never just say "hand off to build-me".
+10. **Package curator privilege escalation.** Agent self-evolution workflows may submit redacted evidence/proposals to the package curator, but must never edit the generic public package source or fleet-installed copies directly. Only the dedicated weekly Maintain-Me package curator may apply small generic improvements under existing public release policy.
+11. **Drift silent failure.** Package integrity hash mismatch across the installed fleet is a degraded state requiring review, not a silent no-op.
 
 ## Verification Checklist
 
