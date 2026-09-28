@@ -196,16 +196,16 @@ MIT
 
 You can run a weekly Hermes cron to review usage of this package across one or more configured agents, then improve the skills and push updates back to this repo.
 
-The primary support script is:
+The primary support scripts are:
 
 ```bash
-scripts/brief_me_usage_collect.py
+scripts/brief_me_usage_collect.py --repo-root /path/to/brief-me-public
 scripts/curator_review_dedupe.py
 ```
 
 The weekly curator uses `curator_review_dedupe.py` with a stable ISO-week and bounded evidence signature. The first invocation atomically claims the review and returns a claim ID; after the bounded review completes, record it with `--complete --claim-id <claim-id>`. An unchanged completed signature is `no_change`; a live claim is `review_in_progress`, and an interrupted claim can be reclaimed after its lease expires. The state file contains only the secret-safe signature, period, decision/proposal identity when present, claim status, and timestamps.
 
-It collects compact, redacted skill-usage evidence, evidence-tag counts, package-integrity hashes, and bounded-improvement decision metadata. The cron prompt should abstract any work/personal details into reusable skill improvements and avoid committing sensitive content.
+It collects compact, redacted skill-usage evidence, evidence-tag counts, package-integrity hashes, and bounded-improvement decision metadata. The collector compares against its own checkout when run from a checkout; a deployed copy defaults to the conventional public-checkout location. Pass `--repo-root` whenever the checkout is elsewhere so a legacy/private checkout cannot create false drift. The cron prompt should abstract any work/personal details into reusable skill improvements and avoid committing sensitive content.
 
 Treat the GitHub `main` branch as the **release record**. On every review, verify the local checkout and `origin/main` agree. If an installed package copy differs from the checkout, inspect that drift before overwriting it: publish a validated, generic improvement to GitHub first, then deploy the resulting commit to configured targets. Never create empty commits; a genuine no-change run should still report that GitHub is current.
 

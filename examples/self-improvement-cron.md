@@ -27,7 +27,7 @@ The collector returns:
 The cron should follow this loop:
 
 ```text
-collect evidence
+collect evidence with `--repo-root <public-checkout>`
 → compare installed package hashes with the local checkout
 → fetch and verify the local checkout matches `origin/main`
 → classify evidence and any source drift

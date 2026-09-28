@@ -2,6 +2,7 @@
 """TDD coverage for generic Task Runtime distribution and readiness auditing."""
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import io
 import json
@@ -120,6 +121,12 @@ class RuntimeDistributionTests(unittest.TestCase):
         self.assertTrue(collector.package_integrity([agent], expected)["all_agents_match_expected"])
         agent["skills"]["brief-me"]["reference_sha16"] = "tampered"
         self.assertFalse(collector.package_integrity([agent], expected)["all_agents_match_expected"])
+
+    def test_collector_uses_its_public_checkout_as_default_source(self) -> None:
+        self.assertEqual(collector.default_repo_root(), ROOT)
+        expected = collector.expected_manifest(ROOT)
+        digest = hashlib.sha256((ROOT / "skills" / "productivity" / "brief-me" / "SKILL.md").read_bytes()).hexdigest()[:16]
+        self.assertEqual(expected["brief-me"]["skill_sha16"], digest)
 
     def test_audit_local_root_reports_safe_presence_only(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -204,8 +204,21 @@ def run_remote(agent: str, target: str, days: int, limit: int, profile_root: str
         return {"agent": agent, "target": sanitize(target), "error": f"json parse failed: {e}", "raw_tail": p.stdout[-1000:]}
 
 
-def repo_status() -> dict[str, Any]:
-    repo = Path.home() / "brief-me"
+def default_repo_root() -> Path:
+    """Find the checkout containing this script, or the public checkout fallback.
+
+    A deployed collector commonly lives under ``~/.hermes/scripts`` rather than
+    inside the release checkout.  In that case, use the public checkout's
+    conventional location; callers with a different clone location must pass
+    ``--repo-root`` explicitly.
+    """
+    candidate = Path(__file__).resolve().parents[1]
+    if (candidate / "skills" / "productivity").is_dir():
+        return candidate
+    return Path.home() / "brief-me-public"
+
+
+def repo_status(repo: Path) -> dict[str, Any]:
     out = {"path": str(repo), "exists": repo.exists()}
     if not repo.exists():
         return out
@@ -223,8 +236,8 @@ def repo_status() -> dict[str, Any]:
     return out
 
 
-def expected_manifest() -> dict[str, dict[str, str | None]]:
-    repo_base = Path.home() / "brief-me" / "skills" / "productivity"
+def expected_manifest(repo: Path) -> dict[str, dict[str, str | None]]:
+    repo_base = repo / "skills" / "productivity"
     local_base = Path.home() / ".hermes" / "skills" / "productivity"
     base = repo_base if repo_base.exists() else local_base
     return {name: {"skill_sha16": (hashlib.sha256((base / name / "SKILL.md").read_bytes()).hexdigest()[:16] if (base / name / "SKILL.md").exists() else None), "reference_sha16": (hashlib.sha256((base / name / REFERENCE_RELATIVE).read_bytes()).hexdigest()[:16] if (base / name / REFERENCE_RELATIVE).exists() else None)} for name in TERMS}
@@ -296,6 +309,7 @@ def main() -> None:
     ap.add_argument("--summary-only", action="store_true", help="Omit snippets; return counts, tags, and integrity metadata only.")
     ap.add_argument("--no-default-remotes", action="store_true", help="Only inspect the local profile and explicitly provided --remote-agent entries.")
     ap.add_argument("--local-agent-name", default="local")
+    ap.add_argument("--repo-root", type=Path, help="Public package checkout used for source and integrity comparison.")
     ap.add_argument("--remote-agent", action="append", type=parse_remote_agent, default=[], metavar="NAME=SSH_TARGET")
     args = ap.parse_args()
 
@@ -305,12 +319,13 @@ def main() -> None:
     for source in sources:
         agents.append(run_remote(source["agent"], source["target"], args.days, args.limit_per_agent, profile_root=source.get("profile_root"), mode=source.get("mode", "posix"), summary_only=args.summary_only))
 
-    expected = expected_manifest()
+    repo = args.repo_root.expanduser() if args.repo_root else default_repo_root()
+    expected = expected_manifest(repo)
     integrity = package_integrity(agents, expected)
     result = {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "purpose": "brief-me package usage review evidence; snippets are redacted and must be abstracted before committing skill improvements",
-        "repo": repo_status(),
+        "repo": repo_status(repo),
         "improvement_decision_input": decision_input(agents, integrity),
         "package_integrity": integrity,
         "agents": agents,
