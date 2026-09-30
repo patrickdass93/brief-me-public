@@ -156,9 +156,9 @@ After every verified proof, load `references/decision-and-continuation-protocol.
 
 The protocol is advisory. A discriminating check or next-capability slice may run only when it is already inside the written allowed scope and not approval-gated. `expand` proposes one bounded next capability; it does not authorize it.
 
-- `continue` — more already-approved low-risk slices are needed.
+- `continue` — more already-approved low-risk slices are needed; start the next planned slice without asking Patrick to repeat “continue.”
 - `expand` — proof met promotion criteria; return to Brief-Me or use the already-approved next slice.
-- `close` — success criteria are met; hand to `ship-me` or `maintain-me` as applicable.
+- `close` — this proof is complete; continue to the next planned package phase when applicable. Call the whole task complete only when its full completion contract passes.
 - `revisit` — scope, evidence, ownership, or approval boundary changed; return to `brief-me`.
 
 ## Final-Answer Ledger Gate
@@ -176,18 +176,21 @@ If the blocker fails, report the pending checks instead of claiming completion. 
 
 The task Doc is the running human story of the build, not only an end-of-stage receipt. Before and after each material slice, append a concise full-detail `action`, `verification`, `decision`, or `blocker` event with `scripts/project_log.py --doc-id <task-google-doc-id>`. Record what changed or was tried, who decided, why, the real observed result/evidence, and the exact next step. Do not create a second Doc or log routine noise; omit only credentials, tokens, passwords, and private keys.
 
-## Mandatory MoE Stage Gate
+## User-Visible Progress
 
-Before handing a completed build to `ship-me`, create a secret-safe `stage-gate/v1` record with the build contract, changed resources, verification evidence, side effects, unresolved risks, and rollback. Reuse the task’s Google Doc ID from the brief/ledger:
+The ledger and project Doc do not replace chat updates. Report at task start, every phase transition, each meaningful verified milestone, and any blocker. During active work otherwise opaque for more than 10 minutes, update at least every 10 minutes or at the next material event. Use short phone-readable bullets: **Phase X of Y**, **Done**, **Now**, **Next**, and **Need from Patrick**. Continue unrelated approved low-risk work when a specific gate is blocked.
 
-```bash
-python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/moe_stage_gate.py" \
-  --stage build-me \
-  --artifact <secret-safe-build-record.json> \
-  --doc-id <task-google-doc-id>
-```
+## Kanban Status Updates
 
-The gate calls **GPT-5.6 Sol** and **DeepSeek V4 Pro** in parallel and appends their separate reports to the canonical task Doc. `PASS` from both is required before `ship-me`. `NEEDS_REVISION` loops back to the smallest failing build slice (maximum three cycles); `NEEDS_APPROVAL` pauses for the user; evaluator error blocks the handoff until explicitly resolved. Never place secrets or raw credentials in the record.
+When a Kanban card exists, update its concise status/comments at meaningful phase changes, verified milestones, approval pauses, and blockers. Use `blocked` only for a named approval/input/prerequisite, `review` for completed implementation awaiting review, and `done` only after acceptance checks pass. Do not use `ready` to trigger dispatch unless dispatch is in scope, verified, and authorized. The board complements chat, the project Doc, and the ledger; it grants no new permission.
+
+## Risk-Calibrated MoA Review Gate
+
+For a material/high-impact build transition (or when Patrick requests it), before the consequential handoff create a secret-safe `stage-gate/v1` record with the build contract, changed resources, full verification evidence, side effects, unresolved risks, and rollback. Routine approved low-risk slices use normal verification and the task records without waiting for MoA. Reuse the task’s Google Doc ID from the brief/ledger:
+
+The current `scripts/moe_stage_gate.py` is a legacy runner with fixed evaluator IDs and no separate aggregation pass. Do not use its result as a MoA pass. To clear this gate, use a model-agnostic method available to the current agent that runs both configured reviewers in parallel, sends the full stage evidence and both reports to a distinct aggregator, and preserves the reports plus aggregator verdict in the task record. If any part of that pipeline or report capture is unavailable, record `EVALUATOR_ERROR`; block only the gated consequential action and continue unrelated, already-authorized low-risk work.
+
+The model-agnostic MoA flow runs both configured reviewers in parallel, then sends the full evidence bundle and both reports to a separate aggregator. The aggregator arbitrates conflicts, compares and critiques reasoning, checks for blind spots, preserves disagreement, and issues the final verdict. Use the current agent’s private model configuration; do not hard-code model names. Aggregator `PASS` clears only this gate; `NEEDS_REVISION` returns to the smallest failing build slice (maximum three cycles); `NEEDS_APPROVAL` pauses for the user; `EVALUATOR_ERROR` blocks only the gated consequential handoff while unrelated approved low-risk work continues. Never place secrets or raw credentials in the record.
 
 ## n8n Build Pattern
 

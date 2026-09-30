@@ -1,5 +1,7 @@
 # Local Task Runtime Proof Implementation Plan
 
+> **Superseded historical plan (2026-07-21):** Its fixed-model evaluator instructions and expected `PASS` are obsolete. Do not use them to clear the current model-agnostic MoA gate; follow the current README and skill guidance.
+
 > **For Hermes:** Execute this plan in the local `~/brief-me` checkout only. Do not modify remote agents, installed skills, cron jobs, gateways, secrets, or active workflows.
 
 **Goal:** Build a small, deterministic, SQLite-backed Task Runtime proof that records durable task state, transition events, idempotency keys, parent-child lineage, approval waits, and an import of existing JSON-ledger tasks.
