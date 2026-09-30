@@ -40,7 +40,7 @@ Use this skill when an authorized user:
 - wants multiple agents to understand and execute the same task;
 - needs side-effect, approval, idempotency, or rollback boundaries before implementation.
 
-Do not use this skill to execute the whole project by itself. Use it to produce the brief and decide whether to hand off automatically to `build-me`.
+Use this skill to define the full in-scope completion contract. The same agent continues through the planned `build-me`, `ship-me`, and (when specified) `maintain-me` phases; do not stop after producing the brief or first proof.
 
 ## Questioning Style
 
@@ -49,9 +49,9 @@ Follow `grill-me` behavior:
 1. **Always inspect first**: Run `skill_view`, `read_file`, `session_search` to answer what you can **before** asking the user anything.
 2. Ask one important question at a time. Never ask something you already found in documentation, config, memory or session history.
 3. For every question, provide your recommended answer.
-4. Stop asking once the first safe build slice is clear.
+4. Stop asking once the first safe build slice is clear. This ends discovery; it does **not** end the task.
 5. Produce a brief, not a meandering conversation transcript.
-6. Never automatically delegate or hand off to another agent. This skill runs on the agent that received the user request.
+6. Do not delegate to a different agent without authorization. A planned handoff to another package skill is same-agent continuation and should proceed automatically when safe and in scope.
 
 Example:
 
@@ -60,9 +60,9 @@ Question 1 — What should trigger this workflow?
 Recommended answer: Start with a Manual Trigger first, then add the real trigger after output is verified.
 ```
 
-## Automatic Handoff Rule
+## Automatic Continuation Rule
 
-`brief-me` may hand off to `build-me` automatically when the next step is low-risk.
+The brief must define the intended end state, planned phases, observable acceptance checks, actions allowed without another prompt, and exact approval boundaries. A first useful version or passing proof is a checkpoint, not an implicit stopping point. Continue through all already-authorized, low-risk phases without asking Patrick to repeat “continue.”
 
 Low-risk includes:
 
@@ -73,7 +73,7 @@ Low-risk includes:
 - local health checks;
 - safe test sends only to explicitly approved destinations.
 
-Do **not** automatically hand off when the next step would:
+Do **not** continue automatically into a step that would:
 
 - activate a workflow with real side effects;
 - send messages to real recipients outside an approved test destination;
@@ -84,7 +84,30 @@ Do **not** automatically hand off when the next step would:
 - restart critical services;
 - print, move, or store secrets.
 
-Those require `ship-me` or explicit approval.
+Those require the applicable `ship-me` gate or explicit approval. Pause at the exact gated action and continue independent, already-approved low-risk work where possible.
+
+## Mobile-First Plan and Progress
+
+In chat, use short headings and vertical lists. Avoid tables, long paragraphs, and wide code blocks. Keep the essential plan readable without opening the task Doc:
+
+**Goal**
+<one sentence>
+
+**Plan**
+1. <phase>
+2. <phase>
+3. <phase>
+
+**I’ll continue through**
+<approved low-risk work>
+
+**I’ll pause for**
+<exact approval gates or decisions>
+
+**Updates**
+<when progress will appear in chat>
+
+Send an update at task start, every phase transition, each meaningful verified milestone, and any blocker. For active work otherwise opaque for more than 10 minutes, update at least every 10 minutes or at the next meaningful event. Format each update as short bullets: **Phase X of Y**, **Done**, **Now**, **Next**, **Need from Patrick**. Do not invent completion estimates.
 
 ## Canonical Narrative Project Log
 
@@ -117,25 +140,20 @@ python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/project_log.py" \
 
 Reuse its `--doc-id` for every later entry and retain it in the ledger/task handoff. Never include secrets, raw private diagnostics, or credential values. For an existing task Doc, use `--doc-id` to begin readable timeline entries without creating a duplicate document.
 
-## Mandatory MoE Stage Gate
+## Risk-Calibrated MoA Review Gate
 
-At the final result of every package stage, append a secret-safe `stage-gate/v1` record to that same task Doc. The gate automatically adds a readable timeline outcome and preserves separate reports from **GPT-5.6 Sol** (contract, scope, approvals, readiness) and **DeepSeek V4 Pro** (evidence, feasibility, idempotency, rollback, safety).
+Do not run MoA after every routine phase. At a material/high-impact transition (or when Patrick requests review), append a secret-safe `stage-gate/v1` record to the task Doc with the contract, evidence, side effects, unresolved risks, and rollback boundary. Run the configured reviewer evaluations in parallel, then pass the full evidence bundle and both reports to a separate aggregator to arbitrate conflicts, compare and critique reasoning, check for blind spots, and issue the final verdict. Select available models per agent from private configuration; shared instructions must not name specific models.
 
-```bash
-python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/moe_stage_gate.py \
-  --stage brief-me \
-  --artifact <secret-safe-stage-record.json> \
-  --doc-id <task-google-doc-id>
-```
+The current `scripts/moe_stage_gate.py` is a legacy runner with fixed evaluator IDs and no separate aggregation pass. Do not use its result as a MoA pass. To clear this gate, use a model-agnostic method available to the current agent that runs both configured reviewers in parallel, sends the full stage evidence and both reports to a distinct aggregator, and preserves the reports plus aggregator verdict in the task record. If any part of that pipeline or report capture is unavailable, record `EVALUATOR_ERROR`; block only the gated consequential action and continue unrelated, already-authorized low-risk work.
 
 Gate handling:
 
-- `PASS` from **both** evaluators → hand off to `build-me` when otherwise low risk.
+- Aggregator `PASS` → clear only this review gate; continue to the next planned phase if it is already authorized and low-risk.
 - `NEEDS_REVISION` → revise this stage and rerun; cap the revision loop at three attempts, then escalate.
 - `NEEDS_APPROVAL` → pause for the user; never infer the decision.
-- `EVALUATOR_ERROR` → pre-flight block. Low-risk drafting/build continuation requires an explicit user decision and a recorded error; shipping is always blocked.
+- `EVALUATOR_ERROR` → the MoA run is incomplete; block only the gated consequential action, record the error, and continue unrelated, already-approved low-risk work.
 
-Do not merge, vote on, or rerank the two reports: their independent axes must remain visible. Never commit Drive IDs, task documents, actual credentials, or secrets.
+Keep both reviewer reports and the aggregator’s reasoning/verdict visible in the private task record; do not collapse them into a score or let the aggregator hide material disagreement. Never commit Drive IDs, task documents, actual credentials, or secrets.
 
 ## Durable Task Ledger Guardrail
 
@@ -157,6 +175,10 @@ The brief must include acceptance checks that can be copied into the ledger. Do 
 ```
 
 If a task is ambiguous, approval-gated, destructive, secret-bearing, public-facing, or involves real recipients, either omit `--safe-auto-resume` or include blocked actions so the watchdog alerts instead of resuming.
+
+## Kanban Board as the Operational Status Layer
+
+For multi-phase work, inspect the selected board before creating anything and reuse a matching active card. If none exists, create one concise, idempotent task card with the goal, scope, acceptance checks, approval gates, current phase, next step, links to any project Doc/ledger that actually exists, and local log/artifact paths if it does not. Keep work in `triage` only when its automation is understood; it may trigger decomposition. For manual work with dispatch withheld, create using `--initial-status blocked` and comment why—do not assume an unassigned task is non-dispatchable, as CLI creation may default to `ready`. Use `ready` only after dispatch is verified and authorized. `todo` is held from dispatch for an open prerequisite; `running` means active execution; `blocked` requires a named approval, input, or prerequisite; `review` means awaiting review; `done` requires verified acceptance checks. Parent-to-child links are hard dependencies, not grouping. Update the card at meaningful phase changes, milestones, approvals, and blockers. Board status never substitutes for Patrick’s explicit approval. If Kanban is unavailable, report the access gap and do not claim an update.
 
 ## The Brief-Me Loop
 
@@ -335,7 +357,7 @@ Use this format:
 6. **Activating too early.** Use `ship-me` for release/activation gates.
 7. **Secret leakage.** Document credential names/locations only, never values.
 8. **Overbuilding v1.** Prove the path first, then expand.
-9. **Incomplete handoff metadata.** When handing off to build-me, always include the stable task ID, project Doc ID, and ledger ID; never just say "hand off to build-me".
+9. **Incomplete handoff metadata.** When handing off to build-me, always include the stable task ID, Kanban task ID (when available), project Doc ID, and ledger ID; never just say "hand off to build-me".
 10. **Package curator privilege escalation.** Agent self-evolution workflows may submit redacted evidence/proposals to the package curator, but must never edit the generic public package source or fleet-installed copies directly. Only the dedicated weekly Maintain-Me package curator may apply small generic improvements under existing public release policy.
 11. **Drift silent failure.** Package integrity hash mismatch across the installed fleet is a degraded state requiring review, not a silent no-op.
 

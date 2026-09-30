@@ -106,7 +106,7 @@ Depending on domain:
 
 For consequential releases (public exposure, real recipients, recurring schedules, cost/privacy/reputational impact, or unfamiliar rollback), load `references/decision-and-continuation-protocol.md` and run its three-lens advisory challenge. Record the smallest release scope, top failure mode, detection, rollback boundary, and blocker if any.
 
-This challenge cannot authorize shipping, weaken an approval requirement, or replace the independent MoE stage gate.
+This challenge cannot authorize shipping, weaken an approval requirement, or replace risk-calibrated MoA evaluation when its criteria are met.
 
 ### 3. Backup or Rollback First
 
@@ -148,18 +148,21 @@ After shipping, decide whether `maintain-me` should create monitoring/watchdogs,
 
 Keep the same task Doc readable while shipping. Append a full-detail `decision` event before approval-gated release work, then `action`, `verification`, or `blocker` events as the release proceeds. Each must state what happened, why it was allowed or blocked, the real evidence, and the next safe step. Reuse `scripts/project_log.py --doc-id <task-google-doc-id>`; exclude only credentials, tokens, passwords, and private keys.
 
-## Mandatory MoE Stage Gate
+## User-Visible Progress
 
-After post-ship verification and before declaring the release complete, write a secret-safe `stage-gate/v1` record to the task’s canonical Google Doc:
+The task Doc supports but does not replace chat updates. Report at task start, phase transitions, verified milestones, and blockers; during active work otherwise opaque for more than 10 minutes, update at least every 10 minutes or at the next material event. Use short phone-readable bullets: **Phase X of Y**, **Done**, **Now**, **Next**, and **Need from Patrick**.
 
-```bash
-python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/moe_stage_gate.py" \
-  --stage ship-me \
-  --artifact <secret-safe-ship-record.json> \
-  --doc-id <task-google-doc-id>
-```
+## Kanban Release Status
 
-Both **GPT-5.6 Sol** (contract/approval readiness) and **DeepSeek V4 Pro** (operational proof, rollback, and safety) must independently return `PASS`. Their reports remain separate. Any `NEEDS_REVISION` returns to the smallest safe ship verification step; `NEEDS_APPROVAL` pauses; any `EVALUATOR_ERROR` is an **abort gate** that blocks shipping. This gate does not substitute for an explicit approval requirement.
+Update the existing card at release milestones and record verification or the exact blocker. A `ready` or `done` status is never authorization to publish, message real recipients, launch a live campaign, or cross another approval gate; obtain Patrick’s explicit approval for the exact action.
+
+## Risk-Calibrated MoA Review Gate
+
+Before a material/high-impact release action, or when Patrick requests review, write a secret-safe `stage-gate/v1` record to the task’s canonical Google Doc with the release contract, preflight evidence, planned side effects, unresolved risks, and rollback boundary. Routine low-risk internal releases use normal checks without MoA. Obtain an aggregator `PASS` before the gated release action, then perform and record post-release verification:
+
+The current `scripts/moe_stage_gate.py` is a legacy runner with fixed evaluator IDs and no separate aggregation pass. Do not use its result as a MoA pass. To clear this gate, use a model-agnostic method available to the current agent that runs both configured reviewers in parallel, sends the full release evidence and both reports to a distinct aggregator, and preserves the reports plus aggregator verdict in the task record. If any part of that pipeline or report capture is unavailable, record `EVALUATOR_ERROR`; block only the gated consequential action and continue unrelated, already-authorized low-risk work.
+
+Run both configured reviewer evaluations in parallel, then send the full evidence bundle and both reports to a separate aggregator. It must arbitrate conflicts, compare and critique reasoning, check for blind spots, preserve material disagreement, and issue the final verdict. Select models from this agent’s private configuration; do not hard-code vendor/model names. `NEEDS_REVISION` returns to the smallest failing check; `NEEDS_APPROVAL` pauses; `EVALUATOR_ERROR` blocks only the gated release action while unrelated approved work continues. This review does not substitute for Patrick’s explicit approval.
 
 ## Ship Report Format
 

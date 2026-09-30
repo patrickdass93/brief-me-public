@@ -155,18 +155,21 @@ After recovery, update each acceptance check and run the final blocker before cl
 
 Use the existing task Doc to tell the maintenance story: log a policy decision, material health observation, safe fix, verification, repeat-failure blocker, or handoff with `scripts/project_log.py --doc-id <task-google-doc-id>`. State what happened, why it matters, useful full-detail evidence, and exactly who or what acts next. Exclude only credentials, tokens, passwords, and private keys. Avoid per-poll noise; record only material changes or periodic summaries.
 
-## Mandatory MoE Stage Gate
+## User-Visible Progress
 
-Before closing a maintenance setup or handing it to ongoing operations, append a secret-safe `stage-gate/v1` maintenance record to the task’s canonical Google Doc:
+The task Doc supports but does not replace chat updates. Report at task start, phase transitions, verified milestones, and blockers; during active work otherwise opaque for more than 10 minutes, update at least every 10 minutes or at the next material event. Use short phone-readable bullets: **Phase X of Y**, **Done**, **Now**, **Next**, and **Need from Patrick**.
 
-```bash
-python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/moe_stage_gate.py" \
-  --stage maintain-me \
-  --artifact <secret-safe-maintain-record.json> \
-  --doc-id <task-google-doc-id>
-```
+## Kanban Maintenance Status
 
-GPT-5.6 Sol checks the maintenance contract and escalation boundaries; DeepSeek V4 Pro checks the health evidence, alerting, dedupe, disable path, and bounded auto-fix policy. Both must pass. `NEEDS_REVISION` returns to the health contract/watchdog; `NEEDS_APPROVAL` pauses for the user; evaluator error blocks closure and is recorded in the Doc. Preserve the two reports independently; do not collapse them into a score.
+For a tracked project, update its existing card only when a meaningful health change, fix, blocker, or handoff occurs; avoid per-poll noise and duplicate cards. Do not let board status authorize a live or destructive action.
+
+## Risk-Calibrated MoA Review Gate
+
+Routine health checks and already-approved reversible maintenance do not require MoA. Before a material/high-impact maintenance change or consequential handoff, append a secret-safe `stage-gate/v1` record to the task’s canonical Google Doc with the maintenance contract, evidence, side effects, unresolved risks, and rollback boundary. Use the current agent’s private evaluator configuration; do not hard-code model names.
+
+The current `scripts/moe_stage_gate.py` is a legacy runner with fixed evaluator IDs and no separate aggregation pass. Do not use its result as a MoA pass. To clear this gate, use a model-agnostic method available to the current agent that runs both configured reviewers in parallel, sends the full maintenance evidence and both reports to a distinct aggregator, and preserves the reports plus aggregator verdict in the task record. If any part of that pipeline or report capture is unavailable, record `EVALUATOR_ERROR`; block only the gated consequential action and continue unrelated, already-authorized low-risk monitoring.
+
+Run both configured reviewer evaluations in parallel, then send the full evidence bundle and both reports to a separate aggregator. It arbitrates conflicts, compares and critiques reasoning, checks for blind spots, preserves material disagreement, and issues the final verdict. Aggregator `PASS` clears only this gate; `NEEDS_REVISION` returns to the smallest failing check; `NEEDS_APPROVAL` pauses for the user; `EVALUATOR_ERROR` blocks only the gated consequential change while unrelated approved low-risk monitoring continues. Keep reviewer reports and the aggregator verdict in the Doc; do not collapse them into a score.
 
 ## Health Contract Template
 

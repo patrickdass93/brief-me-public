@@ -468,24 +468,69 @@ class ReleaseDistributionTests(unittest.TestCase):
             self.assertEqual(result["manifest"]["file_count"], 1)
             self.assertTrue((checkout / "payload.txt").is_file())
 
-    def test_release_manifest_is_complete_for_v018(self) -> None:
-        """The committed v0.1.8 manifest must match its own immutable Git tree."""
-        manifest_bytes = subprocess.run(
-            ["git", "show", "HEAD:release-manifest.json"], cwd=ROOT, stdout=subprocess.PIPE, check=True
-        ).stdout
-        manifest = json.loads(manifest_bytes)
+    def test_brief_me_policy_is_conditional_model_agnostic_and_runner_boundary_is_explicit(self) -> None:
+        """Skill guidance must specify the real reviewer/aggregator contract and reject the legacy runner."""
+        skill_paths = [
+            ROOT / "SKILL.md",
+            ROOT / "skills/productivity/brief-me/SKILL.md",
+            ROOT / "skills/productivity/build-me/SKILL.md",
+            ROOT / "skills/productivity/ship-me/SKILL.md",
+            ROOT / "skills/productivity/maintain-me/SKILL.md",
+        ]
+        for path in skill_paths:
+            text = path.read_text()
+            with self.subTest(path=path.relative_to(ROOT)):
+                self.assertNotIn("GPT-5.6 Sol", text)
+                self.assertNotIn("DeepSeek V4 Pro", text)
+                self.assertNotIn("Mandatory MoE Stage Gate", text)
+                self.assertNotIn('python "${BRIEF_ME_PACKAGE_ROOT:-$HOME/brief-me}/scripts/moe_stage_gate.py"', text)
+                self.assertIn("configured reviewer", text.lower())
+                self.assertIn("parallel", text.lower())
+                self.assertIn("full evidence bundle", text.lower())
+                self.assertIn("both reports", text.lower())
+                self.assertIn("separate aggregator", text.lower())
+                self.assertIn("evaluator_error", text.lower())
+        for path in skill_paths[1:]:
+            with self.subTest(legacy_runner_path=path.relative_to(ROOT)):
+                text = path.read_text()
+                self.assertIn("do not use its result as a moa pass", text.lower())
+                self.assertIn("block only the gated consequential action", text.lower())
+        readme = (ROOT / "README.md").read_text().lower()
+        self.assertIn("model-specific prompt files", readme)
+        self.assertIn("these artifacts are legacy", readme)
+        self.assertIn("sample model ids", readme)
+        self.assertIn("do not use its result as a moa pass", readme)
+        legacy_artifacts = [
+            ROOT / "prompts/gpt-5.6-sol-contract.v1.md",
+            ROOT / "prompts/deepseek-v4-pro-operations.v1.md",
+        ]
+        for path in legacy_artifacts:
+            with self.subTest(legacy_prompt=path.relative_to(ROOT)):
+                text = path.read_text().lower()
+                self.assertIn("legacy model-specific prompt", text)
+                self.assertIn("do not use its output as a gate pass", text)
+        historical_plan = (ROOT / "docs/plans/2026-07-21-local-task-runtime-proof.md").read_text().lower()
+        self.assertIn("superseded historical plan", historical_plan)
+        self.assertIn("do not use them to clear the current model-agnostic moa gate", historical_plan)
+        for path in skill_paths[:3]:
+            with self.subTest(continuation_path=path.relative_to(ROOT)):
+                self.assertIn("without asking patrick to repeat", path.read_text().lower())
+
+    def test_release_manifest_matches_candidate_working_tree(self) -> None:
+        """The candidate manifest covers every tracked and unignored new file."""
+        manifest = json.loads((ROOT / "release-manifest.json").read_text())
         self.assertEqual(manifest["schema_version"], 1)
-        self.assertEqual(manifest["version"], "v0.1.10")
+        self.assertEqual(manifest["version"], "v0.1.11")
         tracked = subprocess.run(
-            ["git", "ls-tree", "-r", "--name-only", "HEAD"], cwd=ROOT, text=True, capture_output=True, check=True
-        ).stdout.splitlines()
-        expected = {relative for relative in tracked if relative != "release-manifest.json"}
-        self.assertEqual(set(manifest["files"]), expected)
+            ["git", "ls-files", "--cached", "-z"], cwd=ROOT, stdout=subprocess.PIPE, check=True
+        ).stdout.split(b"\0")
+        untracked = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard", "-z"], cwd=ROOT, stdout=subprocess.PIPE, check=True
+        ).stdout.split(b"\0")
+        candidates = {item.decode() for item in (*tracked, *untracked) if item and item.decode() != "release-manifest.json"}
+        self.assertEqual(set(manifest["files"]), candidates)
         for relative, digest in manifest["files"].items():
-            blob = subprocess.run(
-                ["git", "show", f"HEAD:{relative}"], cwd=ROOT, stdout=subprocess.PIPE, check=True
-            ).stdout
-            self.assertEqual(digest, hashlib.sha256(blob).hexdigest(), relative)
+            self.assertEqual(digest, puller.sha256(ROOT / relative), relative)
 
 
 if __name__ == "__main__":

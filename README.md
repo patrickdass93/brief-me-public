@@ -9,7 +9,7 @@ A Hermes skill package for turning vague project ideas into verified agentic exe
 - `ship-me` — release/activate/expose with final verification, rollback, and side-effect gates.
 - `maintain-me` — create quiet monitoring/watchdogs, auto-fix simple failures when safe, and run evidence-gated improvement reviews when the health contract allows them.
 
-The package shares [`references/decision-and-continuation-protocol.md`](references/decision-and-continuation-protocol.md): a bounded, advisory comparison process that prevents premature convergence and requires every verified proof to record whether to close, continue, expand, or revisit. It never replaces approvals, rollback, ledgers, or independent MoE stage gates.
+The package shares [`references/decision-and-continuation-protocol.md`](references/decision-and-continuation-protocol.md): a bounded, advisory comparison process that prevents premature convergence and requires every verified proof to record whether to close, continue, expand, or revisit. It never replaces approvals, rollback, ledgers, or risk-calibrated MoA review when required.
 
 ## Operating model
 
@@ -45,7 +45,21 @@ Start with:
 Use brief-me. I want to build <workflow/app/tool/integration>.
 ```
 
-The agent should ask one question at a time, recommend a default answer, produce a build brief, then automatically hand off to `build-me` for low-risk actions.
+The agent should ask one question at a time, recommend a default answer, produce a build brief, then continue through every planned, already-authorized low-risk phase without requiring Patrick to prompt it at each handoff.
+
+## Completion and mobile-first progress
+
+A brief is a checkpoint, not completion. It lists the planned in-scope phases and observable acceptance checks. Continue through those phases without asking Patrick to repeat “continue.” Pause only for the exact approval gate, a material decision outside the brief, a missing prerequisite, or a genuine blocker. Include `maintain-me` only when the brief calls for ongoing monitoring.
+
+Send progress in chat at task start, each phase transition, each verified milestone, and any blocker. During active work that would otherwise be opaque for more than 10 minutes, update at least every 10 minutes or at the next meaningful event. Keep messages readable on a phone: short headings and bullets, no tables or wide code blocks. Use:
+
+**Phase 2 of 4 — Build**
+- **Done:** <verified slice>
+- **Now:** <current work>
+- **Next:** <next milestone>
+- **Need from Patrick:** <none or exact decision>
+
+The project Doc and ledger support the update; they do not replace it.
 
 ## Safety defaults
 
@@ -60,13 +74,19 @@ Low-risk actions can proceed automatically:
 
 Approval is required for public exposure, real recipients outside approved destinations, destructive changes, broad production data mutation, secrets movement/storage, DNS/tunnel changes, or critical restarts.
 
-## Mandatory MoE stage gates
+Use Hermes Kanban as the concise operational status and handoff layer for multi-phase work; keep the full narrative in a private project Doc and durable ledger when available, otherwise use a local `PROJECT_LOG.md` and report the access gap. Continue mobile-readable chat updates. New manual cards must be created non-dispatchable until dispatch is verified and authorized; board status never grants user approval. See [`references/kanban-board-workflow.md`](references/kanban-board-workflow.md) for task reuse, status, dependency, and dispatch safeguards.
 
-Every final stage result is evaluated in parallel by **GPT-5.6 Sol** (contract, scope, approval boundaries, next-stage readiness) and **DeepSeek V4 Pro** (operational evidence, feasibility, failure behavior, rollback, safety). The two reports remain separate. A stage advances only when both return `PASS`; revision, approval, and evaluator-error outcomes use explicit gates rather than a blended score.
+## Risk-calibrated MoA reviews
+
+Use model-agnostic Mixture-of-Agents (MoA) evaluation only at material or high-impact boundaries, or when Patrick requests it—not after every routine phase. Run both configured reviewer evaluations in parallel against the stage record. Then pass the full evidence bundle and both reports to a separate aggregator. The aggregator arbitrates conflicts, compares and critiques the reviewers’ reasoning, checks for blind spots, preserves unresolved disagreement, and issues the final structured verdict. Select available providers/models from each agent’s private local configuration; shared instructions must define reviewer roles, not require a vendor or model. Prefer distinct models when available and record when reviewers use the same model.
+
+The aggregator’s `PASS` clears only that specific review gate. `NEEDS_REVISION` returns to the smallest failing slice; `NEEDS_APPROVAL` pauses for Patrick; `EVALUATOR_ERROR` means the review was incomplete and blocks only the gated consequential action. Continue unrelated, already-approved low-risk work. MoA review never substitutes for Patrick’s explicit approval.
 
 Each workflow task has one private Google Doc as its canonical **full-detail, secret-safe project story**. It is created at the first material event—not only at a final stage gate—and it records the chronological decisions made by the authorized user and the agent, key inspection facts, attempted actions, verification results, blockers, approvals, and handoffs. Every entry answers: **what happened, who decided or acted, why it mattered, useful evidence/outcome, and what happens next.** Include ordinary operational detail; exclude only credentials, tokens, passwords, and private keys.
 
-Use `scripts/project_log.py` to create/reuse and append idempotent human-readable events. New records use `safe_to_log: true`; previously saved `redactions_applied: true` project-log and stage-gate records remain readable and valid for backward compatibility. Configure its Drive folder and Google backend outside the repository in `~/.hermes/brief_me_stage_reviews.private.json`; start from `brief_me_stage_reviews.private.json.example`. The stage-gate runtime remains a complementary end-of-stage receipt: it appends a readable outcome to the same timeline and retains independent GPT-5.6 Sol / DeepSeek V4 Pro reports plus a canonical machine record. The generic implementation, schemas, prompt contracts, and test fixtures are public-safe:
+Use `scripts/project_log.py` to create/reuse and append idempotent human-readable events. New records use `safe_to_log: true`; previously saved `redactions_applied: true` project-log and stage-gate records remain readable and valid for backward compatibility. Configure its Drive folder and Google backend outside the repository in `~/.hermes/brief_me_stage_reviews.private.json`; start from `brief_me_stage_reviews.private.json.example`. The planned MoA stage-gate runtime appends its readable outcome to the same timeline and preserves the full evidence bundle, independent reviewer reports, aggregator verdict, and canonical machine record. The public package also retains model-specific prompt files, fixed evaluator configuration keys and sample model IDs, plus older plan/test fixtures for compatibility. These artifacts are legacy, not the approved model-agnostic reviewer selection or gate path; do not treat their output as a MoA pass. Refactor them to use each agent’s private available-model configuration before activating the MoA policy:
+
+**Runtime implementation requirement:** the current stage-gate runner has fixed evaluator IDs and no separate aggregation pass. Do not use its result as a MoA pass. Refactor its evaluator configuration, prompts, runner, and tests before treating this MoA policy as active. The runtime must select both reviewers and aggregator from each agent’s private available-model configuration, run reviewer calls in parallel, and send their full evidence bundle to the separate aggregator. Do not publish fixed model names or imply that a documentation-only change enables MoA.
 
 ```text
 schemas/stage-gate-record.v1.json
@@ -81,7 +101,7 @@ tests/
 
 The gate runtime requires Python 3, [`jsonschema`](requirements.txt), and configured `hermes` CLI providers. For task Docs, select the authenticated backend in the private config: `gog`, `gws`, or `hermes-api`. `hermes-api` uses that target Hermes profile's own Google Workspace OAuth helper and never copies credentials between agents. Install the public Python dependency with `python -m pip install -r requirements.txt` before using the gate CLI on a new host.
 
-Use `scripts/moe_stage_gate.py --help` for invocation details. The script validates the record locally, runs both evaluator calls in parallel, then appends the independent reports and canonical machine record to the task Doc. The runtime is invoked from the package checkout by default (`$HOME/brief-me`); set `BRIEF_ME_PACKAGE_ROOT` when the checkout is elsewhere. Never commit Drive IDs, task documents, raw evaluator prompts, or actual credentials.
+The current `scripts/moe_stage_gate.py` runner validates records locally and runs its two fixed evaluator calls in parallel; it is a legacy path, not the planned model-agnostic MoA flow. Do not use its result as a MoA pass. Report `EVALUATOR_ERROR` for the formal gate until the model-agnostic pipeline, separate aggregator, and report capture are implemented. The `--help` output documents legacy CLI syntax only. The runtime is invoked from the package checkout by default (`$HOME/brief-me`); set `BRIEF_ME_PACKAGE_ROOT` when the checkout is elsewhere. Never commit Drive IDs, task documents, raw evaluator prompts, or actual credentials.
 
 ## Versioned public release and opt-in source pull
 
